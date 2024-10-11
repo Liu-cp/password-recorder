@@ -74,6 +74,9 @@ int main(int argc, char *argv[])
     QApplication a(argc, argv);
     setupLogging();
 
+    // 设置应用程序图标
+    a.setWindowIcon(QIcon(":/password-recorder.ico"));
+
     if (DataBase::getInstance().dataBaseInit() != 0 ) {
         // 添加错误弹窗，显示错误信息
         QMessageBox::warning(nullptr, "系统错误", "数据库异常，请稍后重试！");

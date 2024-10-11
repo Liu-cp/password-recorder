@@ -51,4 +51,10 @@ contains(ANDROID_TARGET_ARCH,arm64-v8a) {
 }
 
 DISTFILES += \
-    android/src/com/MysqlConnector.java
+    android/src/com/MysqlConnector.java \
+    createpackage.iss \
+    icons/password recorder.webp \
+    icons/password-recorder.ico
+
+RESOURCES += \
+    icons/icons.qrc
