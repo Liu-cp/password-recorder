@@ -21,6 +21,7 @@ SOURCES += \
 HEADERS += \
     database.h \
     login.h \
+    public.h \
     signin.h \
     uidatabaseset.h \
     uimainwindow.h \
@@ -52,6 +53,8 @@ contains(ANDROID_TARGET_ARCH,arm64-v8a) {
 
 DISTFILES += \
     android/src/com/MysqlConnector.java \
+    android/src/com/mysql/MysqlConnector.java \
+    android/src/com/public_utils/PublicUtils.java \
     createpackage.iss \
     icons/password recorder.webp \
     icons/password-recorder.ico

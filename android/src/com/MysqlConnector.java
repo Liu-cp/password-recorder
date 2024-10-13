@@ -17,9 +17,14 @@ import java.util.logging.FileHandler;
 import java.util.logging.Logger;
 import java.util.logging.SimpleFormatter;
 
-class ReturnValue {
-    public static final String FAIL = "failed: ";
-    public static final String SUCCESS = "success";
+class ReturnMsg {
+    public static final String SUCCESS = "Success";
+    public static final String FAIL = "Fail: ";
+    public static final String ERROR = "Error: ";
+
+    public static String message(String key, String msg) {
+        return key + msg;
+    }
 }
 
 public class MysqlConnector {
@@ -69,8 +74,8 @@ public class MysqlConnector {
 
         try {
             // 加载 MySQL JDBC 驱动
-            // Class.forName("com.mysql.jdbc.Driver");  // mysql 5.x
-            Class.forName("com.mysql.cj.jdbc.Driver");  // mysql 6.x
+            Class.forName("com.mysql.jdbc.Driver");  // mysql 5.x
+            // Class.forName("com.mysql.cj.jdbc.Driver");  // mysql 6.x
 
             // 构建连接 URL，推荐加上字符编码和时区参数
             // String url = String.format("jdbc:mysql://%s:%d/%s?useUnicode=true&characterEncoding=utf8mb4&serverTimezone=UTC", host, port, dbName);
@@ -79,13 +84,15 @@ public class MysqlConnector {
             conn = DriverManager.getConnection(url, user, password);
 
             if ( conn == null ) {
-                return ReturnValue.FAIL + "connect to MySQL failed";
+                return ReturnMsg.message(ReturnMsg.FAIL, "connect to MySQL failed");
             }
         } catch (Exception e) {
             e.printStackTrace();
             // 将异常信息记录到日志中
             logException(e);
-            return ReturnValue.FAIL + e.getMessage();
+            return ReturnMsg.message(ReturnMsg.FAIL, e.getMessage());
+        } catch (Throwable t) {
+             return ReturnMsg.message(ReturnMsg.FAIL, t.getMessage());
         } finally {
             // 确保连接关闭
             if (conn != null) {
@@ -97,19 +104,54 @@ public class MysqlConnector {
             }
         }
 
-        return ReturnValue.SUCCESS;
+        return ReturnMsg.SUCCESS;
     }
 
-    public int connectToMysql(String host, int port, String dbName, String user, String password) {
+    public String connectToMysql(String host, int port, String dbName, String user, String password) {
         return MysqlConnectionPool.initConnectionPool(host, port, dbName, user, password);
+    }
+
+    public String executeSQL(String sql) {
+        String result = "";
+
+        try {
+            return MysqlConnectionPool.test();
+            // Connection conn = MysqlConnectionPool.getConnection();
+            // return "test conn";
+            /*
+            if ( conn == null ) {
+                return ReturnMsg.message(ReturnMsg.FAIL, "connect to MySQL failed");
+            }
+
+            // 创建 Statement 对象
+            Statement stmt = conn.createStatement();
+
+            // 执行查询
+            ResultSet rs = stmt.executeQuery(sql);
+
+            // 处理结果集并将其转换为字符串
+            while (rs.next()) {
+                result += rs.getString(1) + "\n";  // 假设查询结果为单列，简单拼接
+            }
+
+            rs.close();
+            stmt.close();
+            MysqlConnectionPool.returnConnection(conn);
+            */
+        } catch (Exception e) {
+           e.printStackTrace();
+           result = ReturnMsg.message(ReturnMsg.ERROR, e.getMessage());
+        }
+
+        return result;
     }
 }
 
 class MysqlConnectionPool {
 
     private static LinkedList<Connection> connectionPool = new LinkedList<>();
-    private static final int INITIAL_POOL_SIZE = 10;
-    private static final int MAX_POOL_SIZE = 20;
+    private static final int INITIAL_POOL_SIZE = 5;
+    private static final int MAX_POOL_SIZE = 10;
     private static String dbUrl;
     private static String dbUser;
     private static String dbPwd;
@@ -119,8 +161,13 @@ class MysqlConnectionPool {
         return DriverManager.getConnection(dbUrl, dbUser, dbPwd);
     }
 
+    public static String test() {
+        String res = String.format("pool size: %d", connectionPool.size());
+        return res;
+    }
+
     // 初始化连接池
-    public static int initConnectionPool(String host, int port, String dbName, String user, String password) {
+    public static String initConnectionPool(String host, int port, String dbName, String user, String password) {
         dbUrl = String.format("jdbc:mysql://%s:%d/%s", host, port, dbName);
         dbUser = user;
         dbPwd = password;
@@ -131,10 +178,10 @@ class MysqlConnectionPool {
             }
         } catch (SQLException e) {
             e.printStackTrace();
-            return -1;
+            return ReturnMsg.message(ReturnMsg.FAIL, e.getMessage());
         }
 
-        return 1;
+        return ReturnMsg.SUCCESS;
     }
 
 

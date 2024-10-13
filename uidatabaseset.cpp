@@ -2,9 +2,9 @@
 #include "ui_uidatabaseset.h"
 #include "uimanager.h"
 #include "database.h"
-#ifdef Q_OS_ANDROID
-#include "jni_interface_mysql.h"
-#endif
+// #ifdef Q_OS_ANDROID
+// #include "jni_interface_mysql.h"
+// #endif
 #include <QMessageBox>
 
 UiDatabaseSet::UiDatabaseSet(QWidget *parent)
@@ -35,13 +35,9 @@ void UiDatabaseSet::on_button_return_clicked()
 void UiDatabaseSet::on_button_dbTest_clicked()
 {
     DBTable_DatabaseSet dbSet(ui->lineEdit_hostName->text(), ui->lineEdit_hostPort->text().toUInt(), ui->lineEdit_dbName->text(), ui->lineEdit_username->text(), ui->lineEdit_password->text());
-    QString info;
+    QString info = DataBase::getInstance().remoteDatabaseConnectTest(dbSet);
 
-    int ret = DataBase::getInstance().remoteDatabaseConnectTest(dbSet);
-    if ( ret == 0 ) info = "远程数据库连接测试成功";
-    else info = QString("远程数据库连接测试失败: %1").arg(ret);
-
-    QMessageBox::information(nullptr, "系统信息", info);
+    QMessageBox::information(nullptr, "系统信息", "远程数据库连接测试结果: " + info);
 }
 
 
@@ -65,13 +61,13 @@ void UiDatabaseSet::on_button_save_clicked()
 
 void UiDatabaseSet::on_ui_toBeShow()
 {
-#ifdef Q_OS_ANDROID
-    if ( !MysqlJniInterface::getInstance().isValid() ) {
-        QMessageBox::warning(nullptr, "系统异常", "系统数据库必要模块加载失败，请稍后重试！");
-        UiManager::getInstance().showUi(UiName::eUiLogin);
-        return ;
-    }
-#endif
+// #ifdef Q_OS_ANDROID
+//     if ( !MysqlJniInterface::getInstance().isValid() ) {
+//         QMessageBox::warning(nullptr, "系统异常", "系统数据库必要模块加载失败，请稍后重试！");
+//         UiManager::getInstance().showUi(UiName::eUiLogin);
+//         return ;
+//     }
+// #endif
 
     DBTable_DatabaseSet dbSet;
     if ( DataBase::getInstance().getRemoteDatabaseInfo(dbSet) ) {

@@ -70,7 +70,7 @@ private:
     }
     bool checkTableExist(const QString& tbName, DatabaseType dbType = DatabaseType::eDbType_null);
     bool createTable4PasswordRecorder();
-    int connectToMysql(const DBTable_DatabaseSet &dbSet, const QString &connectName, bool needClose = false);
+    QString connectToMysql(const DBTable_DatabaseSet &dbSet, const QString &connectName, bool needClose = false);
 
 public:
     ~DataBase();
@@ -83,7 +83,7 @@ public:
 
     // database set
     int dataBaseInit();
-    int remoteDatabaseConnectTest(const DBTable_DatabaseSet &dbSet);
+    QString remoteDatabaseConnectTest(const DBTable_DatabaseSet &dbSet);
     int mysqlDatabaseSet(const DBTable_DatabaseSet &dbSet);
     bool getRemoteDatabaseInfo(DBTable_DatabaseSet &dbSet) {
         if ( !m_mysqlValid ) return false;
@@ -111,9 +111,11 @@ public:
 private:
     const QString DB_NAME_SQLITE = "sqliteDb";
     const QString DB_NAME_MYSQL = "mysqlDb";
+
     const QString TB_NAME_MYSQL_INFO = "tb_database_info";
     const QString TB_NAME_USERS = "tb_users";
     const QString TB_NAME_PWD_RECORDER = "_password_recorder";
+
     QSqlDatabase m_sqliteDb;
     QSqlDatabase m_mysqlDb;
     QString m_tbPwdRecorder;

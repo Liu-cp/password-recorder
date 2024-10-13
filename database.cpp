@@ -1,4 +1,5 @@
 #include "database.h"
+#include "public.h"
 #include <QSqlDatabase>
 #include <QSqlQuery>
 #include <QSqlError>
@@ -87,9 +88,9 @@ bool DataBase::createTable4PasswordRecorder()
     return true;
 }
 
-int DataBase::connectToMysql(const DBTable_DatabaseSet &dbSet, const QString &connectName, bool needClose)
+QString DataBase::connectToMysql(const DBTable_DatabaseSet &dbSet, const QString &connectName, bool needClose)
 {
-    int ret = 0;
+    QString ret = RETURN_SUCCESS_STR;
 
     // MySQL 连接
     QSqlDatabase mysqlDb = QSqlDatabase::addDatabase("QMYSQL", connectName);
@@ -99,9 +100,9 @@ int DataBase::connectToMysql(const DBTable_DatabaseSet &dbSet, const QString &co
     mysqlDb.setUserName(dbSet.username);
     mysqlDb.setPassword(dbSet.password);
     if ( !mysqlDb.open() ) {
-        qDebug() << "Cannot connect to mysql: " << mysqlDb.lastError().text();
+        ret = "Cannot connect to mysql: " + mysqlDb.lastError().text();
+        qDebug() << ret;
         needClose = true;
-        ret = -1;
     }
 
     if ( needClose ) {
@@ -154,7 +155,7 @@ int DataBase::dataBaseInit()
     return 0;
 }
 
-int DataBase::remoteDatabaseConnectTest(const DBTable_DatabaseSet &dbSet)
+QString DataBase::remoteDatabaseConnectTest(const DBTable_DatabaseSet &dbSet)
 {
 #ifdef Q_OS_WIN
     return connectToMysql(dbSet, "test", true);
@@ -178,12 +179,13 @@ int DataBase::mysqlDatabaseSet(const DBTable_DatabaseSet &dbSet)
             QSqlDatabase::removeDatabase(DB_NAME_MYSQL);
 #elif defined(Q_OS_ANDROID)
             // TODO：调用JAVA接口释放连接池
+            MysqlJniInterface::getInstance().closeMysqlConnect();
 #endif
         }
     }
 
 #ifdef Q_OS_WIN
-    int ret = connectToMysql(dbSet, DB_NAME_MYSQL);
+    int ret = connectToMysql(dbSet, DB_NAME_MYSQL) == RETURN_SUCCESS_STR ? 0 : -1;
 #elif defined(Q_OS_ANDROID)
     int ret = MysqlJniInterface::getInstance().connectToMysql(dbSet.hostName, dbSet.hostPort, dbSet.databaseName, dbSet.username, dbSet.password);
 #endif

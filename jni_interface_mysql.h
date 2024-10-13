@@ -34,10 +34,13 @@ public:
     bool isValid() {
         return m_javaClass.isValid();
     }
-    int testConnect(const QString &hostName, int hostPort, const QString &databaseName, const QString &username, const QString &password);
+    QString testConnect(const QString &hostName, int hostPort, const QString &databaseName, const QString &username, const QString &password);
     int connectToMysql(const QString &hostName, int hostPort, const QString &databaseName, const QString &username, const QString &password);
+    int closeMysqlConnect();
 
 private:
+    const QString JAVA_RETURN_SUCCESS = "Success";
+
     QJniObject m_javaClass;
 
 signals:
