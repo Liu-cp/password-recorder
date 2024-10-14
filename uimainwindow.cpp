@@ -191,6 +191,6 @@ void UiMainWindow::on_ui_toBeShow()
 
 void UiMainWindow::on_button_search_clicked()
 {
-
+    QMessageBox::information(nullptr, "系统信息", "功能不可用，请关注后续版本！");
 }
 

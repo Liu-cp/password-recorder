@@ -65,7 +65,7 @@ void Login::on_button_login_clicked()
 
 void Login::on_button_lossPwd_clicked()
 {
-    QMessageBox::information(nullptr, "系统通知", "功能未实现，敬请期待！");
+    QMessageBox::information(nullptr, "系统信息", "功能不可用，请关注后续版本！");
 }
 
 
