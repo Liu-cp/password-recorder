@@ -3,15 +3,6 @@
 
 #include <QObject>
 #include <QSqlDatabase>
-#ifdef Q_OS_ANDROID
-#include "jni_interface_mysql.h"
-#endif
-
-// enum DBTable {
-//     eTableUsers = 0,
-// };
-
-// const QString DBTableName[] = {"users", ""};
 
 enum DatabaseType {
     eDbType_null,
@@ -69,7 +60,8 @@ private:
         m_tbPwdRecorder = "tb_" + username + TB_NAME_PWD_RECORDER;
     }
     bool checkTableExist(const QString& tbName, DatabaseType dbType = DatabaseType::eDbType_null);
-    bool createTable4PasswordRecorder();
+    bool createTable_tbPasswordRecorder();
+    bool createTable_tbUsers();
     QString connectToMysql(const DBTable_DatabaseSet &dbSet, const QString &connectName, bool needClose = false);
 
 public:

@@ -43,10 +43,10 @@ void UiDatabaseSet::on_button_dbTest_clicked()
 
 void UiDatabaseSet::on_button_save_clicked()
 {
-#ifdef Q_OS_ANDROID
-    QMessageBox::information(nullptr, "系统信息", "功能不可用，请关注后续版本！");
-    return ;
-#endif
+// #ifdef Q_OS_ANDROID
+//     QMessageBox::information(nullptr, "系统信息", "功能不可用，请关注后续版本！");
+//     return ;
+// #endif
 
     DBTable_DatabaseSet dbSet(ui->lineEdit_hostName->text(), ui->lineEdit_hostPort->text().toUInt(), ui->lineEdit_dbName->text(), ui->lineEdit_username->text(), ui->lineEdit_password->text());
     QString info;

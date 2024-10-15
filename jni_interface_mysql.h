@@ -2,7 +2,7 @@
 #define JNI_INTERFACE_MYSQL_H
 
 #include <QObject>
-#include <QJniObject>
+#include <QJsonObject>
 
 // struct MysqlConnectParams
 // {
@@ -24,24 +24,22 @@ private:
     explicit MysqlJniInterface(QObject *parent = nullptr);
     MysqlJniInterface(const MysqlJniInterface&) = delete;
     MysqlJniInterface& operator=(const MysqlJniInterface&) = delete;
+    QJsonObject executeSql(const QString &sqlCmd, const char *javaMethod);
 
 public:
     static MysqlJniInterface& getInstance() {
         static MysqlJniInterface mysql;
         return mysql;
     }
-    // check interface is valid
-    bool isValid() {
-        return m_javaClass.isValid();
-    }
+
     QString testConnect(const QString &hostName, int hostPort, const QString &databaseName, const QString &username, const QString &password);
     int connectToMysql(const QString &hostName, int hostPort, const QString &databaseName, const QString &username, const QString &password);
     int closeMysqlConnect();
+    QJsonObject queryMysql(const QString &sqlCmd);
+    QJsonObject updateMysql(const QString &sqlCmd);
 
 private:
     const QString JAVA_RETURN_SUCCESS = "Success";
-
-    QJniObject m_javaClass;
 
 signals:
 };

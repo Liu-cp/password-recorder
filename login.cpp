@@ -40,7 +40,6 @@ void Login::on_button_signIn_clicked()
     UiManager::getInstance().showUi(UiName::eUiSignIn);
 }
 
-
 void Login::on_button_login_clicked()
 {
     if ( ui->lineEdit_username->text().isEmpty() || ui->lineEdit_password->text().isEmpty() ) {

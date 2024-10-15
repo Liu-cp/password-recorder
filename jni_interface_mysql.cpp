@@ -1,4 +1,5 @@
 #include "jni_interface_mysql.h"
+#include <QJniObject>
 #include <QJniEnvironment>
 #include <jni.h>
 #include <QDebug>
@@ -6,17 +7,11 @@
 #include <QtConcurrent>
 #include <QEventLoop>
 #include <android/native_activity.h>
+#include <QJsonDocument>
 
 MysqlJniInterface::MysqlJniInterface(QObject *parent)
     : QObject{parent}
 {
-    /*
-    m_javaClass = QJniObject("com/MysqlConnector/MysqlConnector");
-    if ( !m_javaClass.isValid() ) {
-        qWarning() << "Java 类(MysqlConnector)加载失败";
-        QMessageBox::warning(nullptr, "系统异常", "安卓模块“MysqlConnector”加载失败！");
-    }
-    */
 }
 
 void checkNetworkStatus() {
@@ -130,4 +125,48 @@ int MysqlJniInterface::closeMysqlConnect()
 
     qDebug() << "result: " << result;
     return result==1 ? 0 : result; // java返回1表示成功
+}
+
+QJsonObject MysqlJniInterface::executeSql(const QString &sqlCmd, const char *javaMethod)
+{
+    QJniObject result = QJniObject::callStaticObjectMethod(
+        "com/mysql/MysqlConnector",    // Java类的包路径
+        javaMethod,                // Java 方法名
+        "(Ljava/lang/String;)Ljava/lang/String;",  // 方法签名
+        QJniObject::fromString(sqlCmd).object<jstring>()  // 参数
+        );
+
+    // 检查 JNI 调用是否有异常
+    QJniEnvironment env;
+    if (env->ExceptionCheck() ) {
+        env->ExceptionClear();
+        qDebug() << "JNI 调用失败";
+    }
+
+    // 检查返回值是否有效
+    if ( !result.isValid() ) {
+        qDebug() << "Failed to call Java method";
+    }
+
+    qDebug() << "result: " << result.toString();
+    // QMessageBox::information(nullptr, "调试信息", "result: " + result.toString());
+    // 将 JSON 字符串解析为 QJsonDocument
+    QJsonDocument jsonDoc = QJsonDocument::fromJson(result.toString().toUtf8());
+
+    QJsonObject jsonObject;
+    if ( !jsonDoc.isNull() && jsonDoc.isObject() ) {
+        jsonObject = jsonDoc.object();
+    }
+
+    return jsonObject;
+}
+
+QJsonObject MysqlJniInterface::queryMysql(const QString &sqlCmd)
+{
+    return executeSql(sqlCmd, "executeQuerySql");
+}
+
+QJsonObject MysqlJniInterface::updateMysql(const QString &sqlCmd)
+{
+    return executeSql(sqlCmd, "executeUpdateSql");
 }
