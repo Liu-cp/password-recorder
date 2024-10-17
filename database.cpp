@@ -10,6 +10,7 @@
 #include <QMessageBox>
 #include <QJsonArray>
 #include <QJsonObject>
+#include <QThreadPool>
 
 DataBase::DataBase(QObject *parent)
     : QObject{parent}, m_mysqlValid(false)
@@ -55,7 +56,6 @@ bool DataBase::checkTableExist(const QString &tbName, DatabaseType dbType)
         QJsonObject jsonObject = MysqlJniInterface::getInstance().queryMysql(cmd);
         if ( !jsonObject.contains(JSON_KEY_RESULT) ) return false;
         QJsonArray jsonArray = jsonObject[JSON_KEY_RESULT].toArray();
-        // QMessageBox::information(nullptr, "调试信息", QString("count: %1").arg(jsonArray[0].toObject()["count"].toString().toInt()));
         if ( jsonArray.isEmpty() || jsonArray[0].toObject()["count"].toString().toInt()<=0 ) return false;
 
         return true;
@@ -119,19 +119,19 @@ bool DataBase::createTable_tbPasswordRecorder()
 
 bool DataBase::createTable_tbUsers()
 {
-    QString cmd = QString("CREATE TABLE %1 (username VARCHAR(25) PRIMARY KEY, pwdHash TEXT, salt TEXT)").arg(TB_NAME_USERS);
+    QString cmd = QString("CREATE TABLE IF NOT EXISTS %1 (username VARCHAR(25) PRIMARY KEY, pwdHash TEXT, salt TEXT)").arg(TB_NAME_USERS);
 
     if ( OS_ANDROID && m_mysqlValid ) {
         QJsonObject jsonObject = MysqlJniInterface::getInstance().updateMysql(cmd);
         if ( jsonObject.isEmpty() || jsonObject[JSON_KEY_RETURN]!=RETURN_SUCCESS_STR ) {
-            qDebug() << "Failed to create table:" << TB_NAME_USERS;
+            qCritical() << "Failed to create table:" << jsonObject[JSON_KEY_RETURN];
             return false;
         }
     }
     else {
         QSqlQuery query(getSqlDataBase());
         if ( !query.exec(cmd) ) {
-            qDebug() << "Failed to create table:" << query.lastError().text();
+            qCritical() << "Failed to create table:" << query.lastError().text();
             return false;
         }
     }
@@ -167,17 +167,51 @@ QString DataBase::connectToMysql(const DBTable_DatabaseSet &dbSet, const QString
     return ret;
 }
 
+void DataBase::recordUserLoginHistory(const QString &username)
+{
+    QString cmd = QString("INSERT INTO %1 (username, lastLoginTime)"
+                          "VALUES ('%2', datetime('now')) "
+                          "ON CONFLICT(username) DO UPDATE SET lastLoginTime = excluded.lastLoginTime")
+                      .arg(TB_NAME_LOGIN_HISTORY, username);
+    QSqlQuery query(m_sqliteDb);
+    if ( !query.exec(cmd) ) {
+        qWarning() << "record new user login info failed: " << query.lastError().text();
+        return ;
+    }
+
+    // max record 5 users
+    cmd = QString("DELETE FROM %1 WHERE username NOT IN ("
+                  "SELECT username FROM %1 "
+                  "ORDER BY lastLoginTime DESC LIMIT 5)").arg(TB_NAME_LOGIN_HISTORY);
+    if ( !query.exec(cmd) ) {
+        qWarning() << "record new user login info failed: " << query.lastError().text();
+    }
+}
+
 int DataBase::dataBaseInit()
 {
     // SQLite 连接
     m_sqliteDb = QSqlDatabase::addDatabase("QSQLITE", DB_NAME_SQLITE);
     m_sqliteDb.setDatabaseName("sqlite_local.db");  // 数据库文件名
     if ( !m_sqliteDb.open() ) {
-        qDebug() << "Cannot connect to sqlite: " << m_sqliteDb.lastError().text();
+        qFatal() << "Cannot connect to sqlite: " << m_sqliteDb.lastError().text();
         return -1;
     }
 
     // 创建数据表用来保存远程数据库信息
+    QString cmd = QString("CREATE TABLE IF NOT EXISTS %1 ("
+                          "type TEXT PRIMARY KEY, "
+                          "host TEXT NOT NULL, "
+                          "port INTEGER NOT NULL, "
+                          "dbName TEXT NOT NULL, "
+                          "username TEXT NOT NULL, "
+                          "password TEXT NOT NULL)").arg(TB_NAME_MYSQL_INFO);
+    QSqlQuery sqliteQuery(m_sqliteDb);
+    if ( !sqliteQuery.exec(cmd) ) {
+        qFatal() << QString("Create table %1 failed: ").arg(TB_NAME_MYSQL_INFO) << sqliteQuery.lastError().text();
+        return false;
+    }
+    /*
     if ( !checkTableExist(TB_NAME_MYSQL_INFO, DatabaseType::eDbType_sqlite) ) {
         QString cmd = QString("CREATE TABLE %1 ("
                               "type TEXT PRIMARY KEY, "
@@ -193,14 +227,22 @@ int DataBase::dataBaseInit()
             return false;
         }
     }
+    */
     // 检查远程数据库配置并连接
-    else {
-        QString cmd = QString("SELECT * FROM %1 WHERE type = '%2'").arg(TB_NAME_MYSQL_INFO, "mysql");
-        QSqlQuery query(m_sqliteDb);
-        if ( query.exec(cmd) && query.next() ) {
-            DBTable_DatabaseSet dbSet(query.value("host").toString(), query.value("port").toInt(), query.value("dbName").toString(), query.value("username").toString(), query.value("password").toString());
-            mysqlDatabaseSet(dbSet);
-        }
+    cmd = QString("SELECT * FROM %1 WHERE type = '%2'").arg(TB_NAME_MYSQL_INFO, "mysql");
+    if ( sqliteQuery.exec(cmd) && sqliteQuery.next() ) {
+        DBTable_DatabaseSet dbSet(sqliteQuery.value("host").toString(), sqliteQuery.value("port").toInt(), sqliteQuery.value("dbName").toString(),
+                                  sqliteQuery.value("username").toString(), sqliteQuery.value("password").toString());
+        mysqlDatabaseSet(dbSet);
+    }
+
+    // create table for record history login users
+    cmd = QString("CREATE TABLE IF NOT EXISTS %1 ("
+                  "username TEXT PRIMARY KEY,"
+                  "lastLoginTime DATETIME)").arg(TB_NAME_LOGIN_HISTORY);
+    if ( !sqliteQuery.exec(cmd) ) {
+        qFatal() << QString("Create table %1 failed: ").arg(TB_NAME_LOGIN_HISTORY) << sqliteQuery.lastError().text();
+        return false;
     }
 
     return 0;
@@ -511,12 +553,8 @@ QString DataBase::hashFunction(const QString &input) const
  */
 int DataBase::userLogin(const QString &username, const QString &password)
 {
-    // 检查表是否存在
-    if ( !checkTableExist(TB_NAME_USERS) ) {
-        if ( createTable_tbUsers() ) {
-            return -2;
-        }
-    }
+    // create table for users
+    if ( !createTable_tbUsers() ) return -2;
 
     QString cmd = QString("SELECT pwdHash, salt FROM %1 WHERE username = '%2'").arg(TB_NAME_USERS, username);
     QString storedHash, storedSalt;
@@ -524,7 +562,7 @@ int DataBase::userLogin(const QString &username, const QString &password)
     if ( m_mysqlValid && OS_ANDROID) {
         QJsonObject query = MysqlJniInterface::getInstance().queryMysql(cmd);
         if ( query.isEmpty() || query[JSON_KEY_RETURN]!=RETURN_SUCCESS_STR ) {
-            qDebug() << "Query failed!";
+            qCritical() << "Query failed! " << query[JSON_KEY_RETURN];
             return -2;
         }
         QJsonArray jsonArray = query[JSON_KEY_RESULT].toArray();
@@ -542,7 +580,7 @@ int DataBase::userLogin(const QString &username, const QString &password)
         QSqlQuery query(getSqlDataBase());
         query.prepare(cmd);
         if ( !query.exec() ) {
-            qDebug() << "Query failed:" << query.lastError().text();
+            qCritical() << "Query failed:" << query.lastError().text();
             return -2;
         }
         if ( !query.next() ) {
@@ -550,10 +588,10 @@ int DataBase::userLogin(const QString &username, const QString &password)
             return -1;
         }
 
-
         storedHash = query.value(0).toString();      // 获取第一列
         storedSalt = query.value(1).toString(); // 获取第二列
     }
+
     if ( storedHash != hashFunction(password+storedSalt) ) {
         qDebug() << "user login failed, because pwd check failed";
         return -1;
@@ -568,6 +606,11 @@ int DataBase::userLogin(const QString &username, const QString &password)
         }
     }
 
+    // record user login history
+    QThreadPool::globalInstance()->start([=]() {    // 注意捕获方式，使用&捕获全部，在debug模式下正常，release模式下会出现异常。
+        this->recordUserLoginHistory(username);
+    });
+
     return 0;
 }
 
@@ -579,12 +622,8 @@ int DataBase::userLogin(const QString &username, const QString &password)
  */
 int DataBase::userSignIn(const QString &username, const QString &password)
 {
-    // 检查表是否存在
-    if ( !checkTableExist(TB_NAME_USERS) ) {
-        if ( createTable_tbUsers() ) {
-            return -1;
-        }
-    }
+    // create table for users
+    if ( !createTable_tbUsers() ) return -2;
 
     QSqlQuery query(getSqlDataBase());
     // 检查用户是否存在
@@ -683,4 +722,22 @@ int DataBase::userSignIn(const QString &username, const QString &password)
     }
 
     return 0;
+}
+
+QStringList DataBase::getUserLoginHistory()
+{
+    QStringList historyUsers;
+
+    QString cmd = QString("SELECT username FROM %1 ORDER BY lastLoginTime DESC").arg(TB_NAME_LOGIN_HISTORY);
+    QSqlQuery query(m_sqliteDb);
+    if ( !query.exec(cmd) ) {
+        qWarning() << "get user login history failed: " << query.lastError().text();
+        return historyUsers;
+    }
+
+    while ( query.next() ) {
+        historyUsers.push_back(query.value(0).toString());
+    }
+
+    return historyUsers;
 }

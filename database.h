@@ -63,6 +63,7 @@ private:
     bool createTable_tbPasswordRecorder();
     bool createTable_tbUsers();
     QString connectToMysql(const DBTable_DatabaseSet &dbSet, const QString &connectName, bool needClose = false);
+    void recordUserLoginHistory(const QString &username);
 
 public:
     ~DataBase();
@@ -90,6 +91,7 @@ public:
     // users
     int userLogin(const QString &username, const QString &password);
     int userSignIn(const QString &username, const QString &password);
+    QStringList getUserLoginHistory();
 
     // password records
     int addNewPwdRecord(const DBTable_PwdRecorder &record);
@@ -104,6 +106,7 @@ private:
     const QString DB_NAME_SQLITE = "sqliteDb";
     const QString DB_NAME_MYSQL = "mysqlDb";
 
+    const QString TB_NAME_LOGIN_HISTORY = "tb_user_login_history";
     const QString TB_NAME_MYSQL_INFO = "tb_database_info";
     const QString TB_NAME_USERS = "tb_users";
     const QString TB_NAME_PWD_RECORDER = "_password_recorder";

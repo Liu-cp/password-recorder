@@ -9,6 +9,7 @@ CONFIG += c++17
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 SOURCES += \
+    custom_widget/customcombobox.cpp \
     database.cpp \
     main.cpp \
     login.cpp \
@@ -19,6 +20,7 @@ SOURCES += \
     uipwddetail.cpp
 
 HEADERS += \
+    custom_widget/customcombobox.h \
     database.h \
     login.h \
     public.h \
@@ -56,6 +58,7 @@ DISTFILES += \
     android/src/com/mysql/MysqlConnector.java \
     android/src/com/public_utils/PublicUtils.java \
     createpackage.iss \
+    icons/combo_arrow.webp \
     icons/password recorder.webp \
     icons/password-recorder.ico
 

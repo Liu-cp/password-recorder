@@ -50,7 +50,7 @@ void UiPwdDetail::on_ui_toBeShow(UiPwdDetailShowType type, const QString pwdName
         ui->lineEdit_pwdName->setText(pwdName); ui->lineEdit_pwdName->setReadOnly(true);
         ui->lineEdit_pwdType->setText(m_originRecord.pwdType);
         ui->lineEdit_username->setText(m_originRecord.username);
-        ui->lineEdit_password->setText(m_originRecord.password);
+        ui->lineEdit_password->setText(m_originRecord.password); ui->checkBox_showPwd->setCheckState(Qt::Unchecked);
         ui->lineEdit_pwdUrl->setText(m_originRecord.pwdUrl);
         ui->lineEdit_pwdNotes->setText(m_originRecord.pwdNotes);
 

@@ -12,6 +12,8 @@ Login::Login(QWidget *parent)
     , ui(new Ui::Login)
 {
     ui->setupUi(this);
+    comboBox_username = new CustomComboBox(this);
+    ui->gridLayout->addWidget(comboBox_username, 0, 1);
 
     connect(ui->button_databaseSet, &QPushButton::clicked, []() {
         UiDatabaseSet *uiInstance = qobject_cast<UiDatabaseSet *>(UiManager::getInstance().getUiInstance(UiName::eUiDatabaseSet));
@@ -42,17 +44,19 @@ void Login::on_button_signIn_clicked()
 
 void Login::on_button_login_clicked()
 {
-    if ( ui->lineEdit_username->text().isEmpty() || ui->lineEdit_password->text().isEmpty() ) {
+
+    if ( comboBox_username->currentText().isEmpty() || ui->lineEdit_password->text().isEmpty() ) {
         QMessageBox::warning(this, "登录异常", "请输入用户名和密码！");
         return ;
     }
 
-    int ret = DataBase::getInstance().userLogin(ui->lineEdit_username->text(), ui->lineEdit_password->text());
+    int ret = DataBase::getInstance().userLogin(comboBox_username->currentText(), ui->lineEdit_password->text());
     if ( ret != 0 ) {
         QString errorMsg;
         if ( ret == -1 ) errorMsg = "用户名不存在或密码错误，请重新输入！";
         else if ( ret == -2 ) errorMsg = "系统错误，请稍后重试！";
         QMessageBox::warning(this, "登录失败", errorMsg);
+        qWarning() << errorMsg << ", user: " << comboBox_username->currentText();
         return ;
     }
 
@@ -77,12 +81,22 @@ void Login::on_ui_toBeShow()
 {
     DBTable_DatabaseSet dbSet;
     if ( DataBase::getInstance().getRemoteDatabaseInfo(dbSet) ) {
-        ui->label_showInfo->setText("已连接到远程数据库");
+        ui->label_showInfo->setText("已连接到远程数据库"+dbSet.databaseName);
         ui->label_showInfo->setStyleSheet("");
     }
     else {
         ui->label_showInfo->setText("远程数据库未连接，将使用本地模式！");
         ui->label_showInfo->setStyleSheet("color: red;");
     }
+
+    QStringList historyUsers = DataBase::getInstance().getUserLoginHistory();
+    comboBox_username->clearItems();
+    comboBox_username->addItems(historyUsers);
+
+    QString currentText = comboBox_username->text();
+    if ( currentText.isEmpty() && !historyUsers.empty() ) {
+        comboBox_username->setText(historyUsers.first());
+    }
+
 }
 

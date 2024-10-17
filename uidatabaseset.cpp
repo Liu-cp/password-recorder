@@ -54,7 +54,7 @@ void UiDatabaseSet::on_button_save_clicked()
     int ret = DataBase::getInstance().mysqlDatabaseSet(dbSet);
     if ( ret == 0 ) {
         info = "远程数据库连接成功";
-        ui->label_showInfo->setText("已连接到远程数据库");
+        ui->label_showInfo->setText("已连接到远程数据库" + dbSet.databaseName);
     }
     else {
         info = QString("远程数据库连接失败: %1").arg(ret);
@@ -66,17 +66,9 @@ void UiDatabaseSet::on_button_save_clicked()
 
 void UiDatabaseSet::on_ui_toBeShow()
 {
-// #ifdef Q_OS_ANDROID
-//     if ( !MysqlJniInterface::getInstance().isValid() ) {
-//         QMessageBox::warning(nullptr, "系统异常", "系统数据库必要模块加载失败，请稍后重试！");
-//         UiManager::getInstance().showUi(UiName::eUiLogin);
-//         return ;
-//     }
-// #endif
-
     DBTable_DatabaseSet dbSet;
     if ( DataBase::getInstance().getRemoteDatabaseInfo(dbSet) ) {
-        ui->label_showInfo->setText("远程数据库已连接");
+        ui->label_showInfo->setText("已连接到远程数据库" + dbSet.databaseName);
         ui->lineEdit_hostPort->setText(QString::number(dbSet.hostPort));
     }
     else {

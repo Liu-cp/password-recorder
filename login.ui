@@ -80,18 +80,6 @@
      </item>
      <item>
       <layout class="QGridLayout" name="gridLayout">
-       <item row="0" column="1">
-        <widget class="QLineEdit" name="lineEdit_username">
-         <property name="styleSheet">
-          <string notr="true">QLineEdit {
-    border: 1px solid gray;
-    border-radius: 10px;
-    padding: 5px;
-}
-</string>
-         </property>
-        </widget>
-       </item>
        <item row="1" column="1">
         <widget class="QLineEdit" name="lineEdit_password">
          <property name="styleSheet">
@@ -332,7 +320,7 @@ text-align: right;</string>
     </spacer>
    </item>
    <item>
-    <layout class="QHBoxLayout" name="horizontalLayout" stretch="2,8">
+    <layout class="QHBoxLayout" name="horizontalLayout" stretch="2,8,0">
      <item>
       <widget class="QPushButton" name="button_databaseSet">
        <property name="styleSheet">
@@ -353,6 +341,22 @@ text-align: right;</string>
         <string>TextLabel</string>
        </property>
       </widget>
+     </item>
+     <item>
+      <spacer name="horizontalSpacer_9">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeType">
+        <enum>QSizePolicy::Fixed</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>1</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
      </item>
     </layout>
    </item>

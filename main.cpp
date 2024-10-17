@@ -34,21 +34,30 @@ void customMessageHandler(QtMsgType type, const QMessageLogContext &context, con
 
     QTextStream out(&logFile);
 
+    // 获取当前时间
+    QString currentDateTime = QDateTime::currentDateTime().toString("yyyy-MM-dd hh:mm:ss");
+
+    // 格式化日志输出，添加文件、函数、行号、日期等信息
+    QString logEntry = QString("[%1] [%2:%3] [%4] ").arg(currentDateTime)
+                           .arg(context.file ? context.file : "Unknown file")
+                           .arg(context.line)
+                           .arg(context.function ? context.function : "Unknown function");
+
     switch (type) {
     case QtDebugMsg:
-        out << "Debug: " << message << "\n";
+        out << logEntry << "Debug: " << message << "\n";
         break;
     case QtInfoMsg:
-        out << "Info: " << message << "\n";
+        out << logEntry << "Info: " << message << "\n";
         break;
     case QtWarningMsg:
-        out << "Warning: " << message << "\n";
+        out << logEntry << "Warning: " << message << "\n";
         break;
     case QtCriticalMsg:
-        out << "Critical: " << message << "\n";
+        out << logEntry << "Critical: " << message << "\n";
         break;
     case QtFatalMsg:
-        out << "Fatal: " << message << "\n";
+        out << logEntry << "Fatal: " << message << "\n";
         abort();
     }
     out.flush();

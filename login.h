@@ -1,6 +1,7 @@
 #ifndef LOGIN_H
 #define LOGIN_H
 
+#include "custom_widget/customcombobox.h"
 #include <QWidget>
 
 QT_BEGIN_NAMESPACE
@@ -29,5 +30,6 @@ public slots:
 
 private:
     Ui::Login *ui;
+    CustomComboBox *comboBox_username;
 };
 #endif // LOGIN_H
