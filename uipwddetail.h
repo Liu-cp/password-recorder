@@ -2,6 +2,7 @@
 #define UIPWDDETAIL_H
 
 #include "database.h"
+#include "custom_widget/customcombobox.h"
 #include <QWidget>
 
 namespace Ui {
@@ -41,6 +42,7 @@ private:
     Ui::UiPwdDetail *ui;
     UiPwdDetailShowType m_showType;
     DBTable_PwdRecorder m_originRecord;
+    CustomComboBox *m_cComboBox_pwdType;
 };
 
 #endif // UIPWDDETAIL_H

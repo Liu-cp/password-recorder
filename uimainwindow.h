@@ -28,7 +28,7 @@ public:
     ~UiMainWindow();
 
 private:
-    void showScrollAreaContext(std::vector<QString>& pwdLabels);
+    void showScrollAreaContext(QStringList &pwdLabels);
     void showLabelDetails(QPushButton *button);
     void closeLabelDetails(QPushButton *button);
 

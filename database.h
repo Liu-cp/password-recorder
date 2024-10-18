@@ -97,7 +97,7 @@ public:
     int addNewPwdRecord(const DBTable_PwdRecorder &record);
     int updatePwdRecord(const DBTable_PwdRecorder &record);
     int deletePwdRecord(const QString &pwdName);
-    std::vector<QString> getAllPwdTypes() const;
+    QStringList getAllPwdTypes() const;
     std::vector<QString> getPwdNamesByPwdType(const QString &pwdType) const;
     int getPasswordRecord(const QString &pwdName, DBTable_PwdRecorder &record) const;
 

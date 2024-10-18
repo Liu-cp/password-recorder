@@ -25,7 +25,7 @@ UiMainWindow::~UiMainWindow()
     delete ui;
 }
 
-void UiMainWindow::showScrollAreaContext(std::vector<QString>& pwdLabels)
+void UiMainWindow::showScrollAreaContext(QStringList &pwdLabels)
 {
     std::unordered_set<QString> labelsSet;
 
@@ -183,7 +183,7 @@ void UiMainWindow::on_button_addNewPwd_clicked()
 
 void UiMainWindow::on_ui_toBeShow()
 {
-    std::vector<QString> lables = DataBase::getInstance().getAllPwdTypes();
+    QStringList lables = DataBase::getInstance().getAllPwdTypes();
     qDebug() << "all pwdTypes size: " << lables.size();
     showScrollAreaContext(lables);
 }

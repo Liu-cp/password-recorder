@@ -418,9 +418,9 @@ int DataBase::addNewPwdRecord(const DBTable_PwdRecorder &record)
     return 0;
 }
 
-std::vector<QString> DataBase::getAllPwdTypes() const
+QStringList DataBase::getAllPwdTypes() const
 {
-    std::vector<QString> types;
+    QStringList types;
 
     QString cmd = QString("SELECT DISTINCT pwdType FROM %1").arg(m_tbPwdRecorder);
 

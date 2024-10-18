@@ -1,6 +1,7 @@
 #include "uipwddetail.h"
 #include "ui_uipwddetail.h"
 #include "uimanager.h"
+#include "database.h"
 #include <QDebug>
 #include <QApplication>
 #include <QClipboard>
@@ -13,6 +14,9 @@ UiPwdDetail::UiPwdDetail(QWidget *parent)
     , m_showType(UiPwdDetailShowType::eTypeNone)
 {
     ui->setupUi(this);
+
+    m_cComboBox_pwdType = new CustomComboBox(this);
+    ui->gridLayout->addWidget(m_cComboBox_pwdType, 1, 2);
 }
 
 UiPwdDetail::~UiPwdDetail()
@@ -29,7 +33,7 @@ void UiPwdDetail::on_ui_toBeShow(UiPwdDetailShowType type, const QString pwdName
         m_originRecord = DBTable_PwdRecorder();
 
         ui->lineEdit_pwdName->clear();  ui->lineEdit_pwdName->setReadOnly(false);
-        ui->lineEdit_pwdType->clear();
+        m_cComboBox_pwdType->setText("");
         ui->lineEdit_username->clear();
         ui->lineEdit_password->clear(); ui->checkBox_showPwd->setCheckState(Qt::Unchecked);
         ui->lineEdit_pwdUrl->clear();
@@ -48,7 +52,7 @@ void UiPwdDetail::on_ui_toBeShow(UiPwdDetailShowType type, const QString pwdName
 
         // 显示数据
         ui->lineEdit_pwdName->setText(pwdName); ui->lineEdit_pwdName->setReadOnly(true);
-        ui->lineEdit_pwdType->setText(m_originRecord.pwdType);
+        m_cComboBox_pwdType->setText(m_originRecord.pwdType);
         ui->lineEdit_username->setText(m_originRecord.username);
         ui->lineEdit_password->setText(m_originRecord.password); ui->checkBox_showPwd->setCheckState(Qt::Unchecked);
         ui->lineEdit_pwdUrl->setText(m_originRecord.pwdUrl);
@@ -56,6 +60,10 @@ void UiPwdDetail::on_ui_toBeShow(UiPwdDetailShowType type, const QString pwdName
 
         ui->button_genPwd->setText("复制用户名");
     }
+
+    QStringList pwdTypes = DataBase::getInstance().getAllPwdTypes();
+    m_cComboBox_pwdType->clearItems();
+    m_cComboBox_pwdType->addItems(pwdTypes);
 }
 
 void UiPwdDetail::on_button_return_clicked()
@@ -154,7 +162,7 @@ QString UiPwdDetail::generateRandomPassword() {
 
 bool UiPwdDetail::checkDataChanged()
 {
-    DBTable_PwdRecorder record(ui->lineEdit_pwdName->text(), ui->lineEdit_pwdType->text(), ui->lineEdit_username->text(), ui->lineEdit_password->text(), ui->lineEdit_pwdUrl->text(), ui->lineEdit_pwdNotes->text());
+    DBTable_PwdRecorder record(ui->lineEdit_pwdName->text(), m_cComboBox_pwdType->text(), ui->lineEdit_username->text(), ui->lineEdit_password->text(), ui->lineEdit_pwdUrl->text(), ui->lineEdit_pwdNotes->text());
     if ( m_showType == UiPwdDetailShowType::eCreatePwd ) {
         return ( !record.pwdName.isEmpty() || !record.pwdType.isEmpty() ||
                 !record.username.isEmpty() || !record.password.isEmpty() ||
@@ -169,7 +177,7 @@ bool UiPwdDetail::checkDataChanged()
 
 void UiPwdDetail::on_button_pwdSave_clicked()
 {
-    DBTable_PwdRecorder record(ui->lineEdit_pwdName->text(), ui->lineEdit_pwdType->text(),  ui->lineEdit_username->text(), ui->lineEdit_password->text(), ui->lineEdit_pwdUrl->text(), ui->lineEdit_pwdNotes->text());
+    DBTable_PwdRecorder record(ui->lineEdit_pwdName->text(), m_cComboBox_pwdType->text(),  ui->lineEdit_username->text(), ui->lineEdit_password->text(), ui->lineEdit_pwdUrl->text(), ui->lineEdit_pwdNotes->text());
     if ( record.pwdName.isEmpty() || record.pwdType.isEmpty() || record.username.isEmpty() || record.password.isEmpty() ) {
         QMessageBox::warning(nullptr, "密码项保存失败", "\"名称\"、\"类别\"、\"用户名\"、\"密码\"为必填项，请完整输入后重试！");
         return ;
