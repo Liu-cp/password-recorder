@@ -1,8 +1,7 @@
 #include "login.h"
 #include "ui_login.h"
-#include "uimanager.h"
-#include "database.h"
-#include "uidatabaseset.h"
+#include "common/uimanager.h"
+#include "database/database.h"
 #include <QMessageBox>
 #include <QSqlQuery>
 #include <QDebug>
@@ -15,10 +14,7 @@ Login::Login(QWidget *parent)
     comboBox_username = new CustomComboBox(this);
     ui->gridLayout->addWidget(comboBox_username, 0, 1);
 
-    connect(ui->button_databaseSet, &QPushButton::clicked, []() {
-        UiDatabaseSet *uiInstance = qobject_cast<UiDatabaseSet *>(UiManager::getInstance().getUiInstance(UiName::eUiDatabaseSet));
-        uiInstance->on_ui_toBeShow();
-    });
+    connect(UiManager::getInstance().getStackedWidget(), &QStackedWidget::currentChanged, this, &Login::handleStackWidgetCurrentChanged);
 }
 
 Login::~Login()
@@ -74,11 +70,15 @@ void Login::on_button_lossPwd_clicked()
 
 void Login::on_button_databaseSet_clicked()
 {
+    emit databaseSetSignal();
+
     UiManager::getInstance().showUi(UiName::eUiDatabaseSet);
 }
 
-void Login::on_ui_toBeShow()
+void Login::handleStackWidgetCurrentChanged(int index)
 {
+    if ( index != UiManager::getInstance().getUiIndex(UiName::eUiLogin) ) return ;
+
     DBTable_DatabaseSet dbSet;
     if ( DataBase::getInstance().getRemoteDatabaseInfo(dbSet) ) {
         ui->label_showInfo->setText("已连接到远程数据库"+dbSet.databaseName);

@@ -1,10 +1,9 @@
 #include "uidatabaseset.h"
 #include "ui_uidatabaseset.h"
-#include "uimanager.h"
-#include "database.h"
-// #ifdef Q_OS_ANDROID
-// #include "jni_interface_mysql.h"
-// #endif
+#include "login.h"
+#include "common/uimanager.h"
+#include "common/uimanager.h"
+#include "database/database.h"
 #include <QMessageBox>
 
 UiDatabaseSet::UiDatabaseSet(QWidget *parent)
@@ -12,6 +11,9 @@ UiDatabaseSet::UiDatabaseSet(QWidget *parent)
     , ui(new Ui::UiDatabaseSet)
 {
     ui->setupUi(this);
+
+    Login *uiLogin = qobject_cast<Login *>(UiManager::getInstance().getUiInstance(UiName::eUiLogin));
+    connect(uiLogin, &Login::databaseSetSignal, this, &UiDatabaseSet::handleDatabaseSetSignal);
 }
 
 UiDatabaseSet::~UiDatabaseSet()
@@ -43,11 +45,6 @@ void UiDatabaseSet::on_button_dbTest_clicked()
 
 void UiDatabaseSet::on_button_save_clicked()
 {
-// #ifdef Q_OS_ANDROID
-//     QMessageBox::information(nullptr, "系统信息", "功能不可用，请关注后续版本！");
-//     return ;
-// #endif
-
     DBTable_DatabaseSet dbSet(ui->lineEdit_hostName->text(), ui->lineEdit_hostPort->text().toUInt(), ui->lineEdit_dbName->text(), ui->lineEdit_username->text(), ui->lineEdit_password->text());
     QString info;
 
@@ -64,7 +61,7 @@ void UiDatabaseSet::on_button_save_clicked()
     QMessageBox::information(nullptr, "系统信息", info);
 }
 
-void UiDatabaseSet::on_ui_toBeShow()
+void UiDatabaseSet::handleDatabaseSetSignal()
 {
     DBTable_DatabaseSet dbSet;
     if ( DataBase::getInstance().getRemoteDatabaseInfo(dbSet) ) {

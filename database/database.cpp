@@ -1,5 +1,5 @@
 #include "database.h"
-#include "public.h"
+#include "common/public.h"
 #include "jni_interface_mysql.h"
 #include <QSqlDatabase>
 #include <QSqlQuery>
@@ -211,23 +211,7 @@ int DataBase::dataBaseInit()
         qFatal() << QString("Create table %1 failed: ").arg(TB_NAME_MYSQL_INFO) << sqliteQuery.lastError().text();
         return false;
     }
-    /*
-    if ( !checkTableExist(TB_NAME_MYSQL_INFO, DatabaseType::eDbType_sqlite) ) {
-        QString cmd = QString("CREATE TABLE %1 ("
-                              "type TEXT PRIMARY KEY, "
-                              "host TEXT NOT NULL, "
-                              "port INTEGER NOT NULL, "
-                              "dbName TEXT NOT NULL, "
-                              "username TEXT NOT NULL, "
-                              "password TEXT NOT NULL"
-                              ")").arg(TB_NAME_MYSQL_INFO);
-        QSqlQuery query(m_sqliteDb);
-        if ( !query.exec(cmd) ) {
-            qDebug() << "Failed to create table:" << query.lastError().text();
-            return false;
-        }
-    }
-    */
+
     // 检查远程数据库配置并连接
     cmd = QString("SELECT * FROM %1 WHERE type = '%2'").arg(TB_NAME_MYSQL_INFO, "mysql");
     if ( sqliteQuery.exec(cmd) && sqliteQuery.next() ) {

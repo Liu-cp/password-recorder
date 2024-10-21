@@ -1,6 +1,7 @@
 #ifndef UIMAINWINDOW_H
 #define UIMAINWINDOW_H
 
+#include "uipwddetail.h"
 #include <QWidget>
 #include <QPushButton>
 #include <QLabel>
@@ -33,13 +34,14 @@ private:
     void closeLabelDetails(QPushButton *button);
 
 private slots:
-    void on_lableButton_clicked();
     void on_button_addNewPwd_clicked();
-
     void on_button_search_clicked();
 
-public slots:
-    void on_ui_toBeShow();
+    void handleLableButtonClicked();
+    void handleStackWidgetCurrentChanged(int index);
+
+signals:
+    void showPwdDetailsSignal(UiPwdDetailShowType type, const QString pwdName = "");
 
 private:
     const QString SYMBOL_LABEL_1 = ">> ";

@@ -1,8 +1,7 @@
 #include "signin.h"
 #include "ui_signin.h"
-#include "uimanager.h"
-#include "database.h"
-#include "uimanager.h"
+#include "common/uimanager.h"
+#include "database/database.h"
 #include <QMessageBox>
 
 SignIn::SignIn(QWidget *parent)

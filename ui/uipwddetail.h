@@ -1,7 +1,7 @@
 #ifndef UIPWDDETAIL_H
 #define UIPWDDETAIL_H
 
-#include "database.h"
+#include "database/database.h"
 #include "custom_widget/customcombobox.h"
 #include <QWidget>
 
@@ -27,9 +27,6 @@ private:
     QString generateRandomPassword();
     bool checkDataChanged();
 
-public slots:
-    void on_ui_toBeShow(UiPwdDetailShowType type, const QString pwdName = "");
-
 private slots:
     void on_button_return_clicked();
     void on_checkBox_showPwd_stateChanged(int arg1);
@@ -37,6 +34,8 @@ private slots:
     void on_button_copyPwd_clicked();
     void on_button_pwdDelete_clicked();
     void on_button_pwdSave_clicked();
+
+    void handleShowPwdDetailsSignal(UiPwdDetailShowType type, const QString pwdName = "");
 
 private:
     Ui::UiPwdDetail *ui;

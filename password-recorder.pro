@@ -10,39 +10,39 @@ CONFIG += c++17
 
 SOURCES += \
     custom_widget/customcombobox.cpp \
-    database.cpp \
+    database/database.cpp \
     main.cpp \
-    login.cpp \
-    signin.cpp \
-    uidatabaseset.cpp \
-    uimainwindow.cpp \
-    uimanager.cpp \
-    uipwddetail.cpp
+    ui/login.cpp \
+    ui/signin.cpp \
+    ui/uidatabaseset.cpp \
+    ui/uimainwindow.cpp \
+    common/uimanager.cpp \
+    ui/uipwddetail.cpp
 
 HEADERS += \
     custom_widget/customcombobox.h \
-    database.h \
-    login.h \
-    public.h \
-    signin.h \
-    uidatabaseset.h \
-    uimainwindow.h \
-    uimanager.h \
-    uipwddetail.h
+    database/database.h \
+    ui/login.h \
+    common/public.h \
+    ui/signin.h \
+    ui/uidatabaseset.h \
+    ui/uimainwindow.h \
+    common/uimanager.h \
+    ui/uipwddetail.h
 
 android {
     SOURCES += \
-        jni_interface_mysql.cpp
+        database/jni_interface_mysql.cpp
     HEADERS += \
-        jni_interface_mysql.h
+        database/jni_interface_mysql.h
 }
 
 FORMS += \
-    login.ui \
-    signin.ui \
-    uidatabaseset.ui \
-    uimainwindow.ui \
-    uipwddetail.ui
+    ui/login.ui \
+    ui/signin.ui \
+    ui/uidatabaseset.ui \
+    ui/uimainwindow.ui \
+    ui/uipwddetail.ui
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin
@@ -54,7 +54,6 @@ contains(ANDROID_TARGET_ARCH,arm64-v8a) {
 }
 
 DISTFILES += \
-    android/src/com/MysqlConnector.java \
     android/src/com/mysql/MysqlConnector.java \
     android/src/com/public_utils/PublicUtils.java \
     createpackage.iss \

@@ -21,8 +21,7 @@ private slots:
     void on_button_dbTest_clicked();
     void on_button_save_clicked();
 
-public slots:
-    void on_ui_toBeShow();
+    void handleDatabaseSetSignal();
 
 private:
     Ui::UiDatabaseSet *ui;

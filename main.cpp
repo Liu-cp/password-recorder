@@ -1,10 +1,10 @@
-#include "login.h"
-#include "signin.h"
-#include "uimainwindow.h"
-#include "uipwddetail.h"
-#include "uidatabaseset.h"
-#include "database.h"
-#include "uimanager.h"
+#include "ui/login.h"
+#include "ui/signin.h"
+#include "ui/uidatabaseset.h"
+#include "ui/uimainwindow.h"
+#include "ui/uipwddetail.h"
+#include "database/database.h"
+#include "common/uimanager.h"
 #include <QApplication>
 #include <QVBoxLayout>
 #include <QDebug>
@@ -71,11 +71,11 @@ void setupLogging()
 
 void init_uiManager()
 {
-    UiManager::getInstance().addUi(UiName::eUiDatabaseSet, new UiDatabaseSet());
     UiManager::getInstance().addUi(UiName::eUiLogin, new Login());
+    UiManager::getInstance().addUi(UiName::eUiDatabaseSet, new UiDatabaseSet());    // eUiDatabaseSet must add after eUiLogin
     UiManager::getInstance().addUi(UiName::eUiSignIn, new SignIn());
     UiManager::getInstance().addUi(UiName::eUiMainWindow, new UiMainWindow());
-    UiManager::getInstance().addUi(UiName::eUiPwdDetail, new UiPwdDetail());
+    UiManager::getInstance().addUi(UiName::eUiPwdDetail, new UiPwdDetail());        // eUiPwdDetail must add after eUiMainWindow
 }
 
 int main(int argc, char *argv[])

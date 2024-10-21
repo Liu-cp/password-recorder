@@ -25,8 +25,10 @@ private slots:
     void on_button_lossPwd_clicked();
     void on_button_databaseSet_clicked();
 
-public slots:
-    void on_ui_toBeShow();
+    void handleStackWidgetCurrentChanged(int index);
+
+signals:
+    void databaseSetSignal();
 
 private:
     Ui::Login *ui;

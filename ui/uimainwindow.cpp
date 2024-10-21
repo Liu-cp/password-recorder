@@ -1,8 +1,8 @@
 #include "uimainwindow.h"
 #include "ui_uimainwindow.h"
 #include "uipwddetail.h"
-#include "uimanager.h"
-#include "database.h"
+#include "common/uimanager.h"
+#include "database/database.h"
 #include <QLabel>
 #include <QMessageBox>
 #include <unordered_set>
@@ -14,10 +14,8 @@ UiMainWindow::UiMainWindow(QWidget *parent)
 {
     ui->setupUi(this);
     ui->scrollArea_VBLayout->setAlignment(Qt::AlignTop);
-    connect(ui->button_addNewPwd, &QPushButton::clicked, []() {
-        UiPwdDetail *uiInstance = qobject_cast<UiPwdDetail *>(UiManager::getInstance().getUiInstance(UiName::eUiPwdDetail));
-        uiInstance->on_ui_toBeShow(UiPwdDetailShowType::eCreatePwd);
-    });
+
+    connect(UiManager::getInstance().getStackedWidget(), &QStackedWidget::currentChanged, this, &UiMainWindow::handleStackWidgetCurrentChanged);
 }
 
 UiMainWindow::~UiMainWindow()
@@ -63,7 +61,7 @@ void UiMainWindow::showScrollAreaContext(QStringList &pwdLabels)
             m_strLBMap[label] = std::make_shared<LabelButton>(button, mainText, symbol);
             m_ptrLBstrMap[button] = label;
 
-            connect(button, &QPushButton::clicked, this, &UiMainWindow::on_lableButton_clicked);
+            connect(button, &QPushButton::clicked, this, &UiMainWindow::handleLableButtonClicked);
         }
     }
 
@@ -121,10 +119,10 @@ void UiMainWindow::showLabelDetails(QPushButton *button)
         bt->setStyleSheet("text-align: left;");     // 文字靠左显示
         vLayout->addWidget(bt);
 
-        connect(bt, &QPushButton::clicked, [bt]() {
+        connect(bt, &QPushButton::clicked, [this, bt]() {
+            emit this->showPwdDetailsSignal(UiPwdDetailShowType::eShowPwd, bt->text());
+
             UiManager::getInstance().showUi(UiName::eUiPwdDetail);
-            UiPwdDetail *uiInstance = qobject_cast<UiPwdDetail *>(UiManager::getInstance().getUiInstance(UiName::eUiPwdDetail));
-            uiInstance->on_ui_toBeShow(UiPwdDetailShowType::eShowPwd, bt->text());
         });
     }
 }
@@ -148,7 +146,7 @@ void UiMainWindow::closeLabelDetails(QPushButton *button)
     m_buttonChildWidgetMap.erase(button);
 }
 
-void UiMainWindow::on_lableButton_clicked()
+void UiMainWindow::handleLableButtonClicked()
 {
     QPushButton *button = qobject_cast<QPushButton*>(sender());
     if ( !button ) {
@@ -178,14 +176,18 @@ void UiMainWindow::on_lableButton_clicked()
 
 void UiMainWindow::on_button_addNewPwd_clicked()
 {
+    emit showPwdDetailsSignal(UiPwdDetailShowType::eCreatePwd);
+
     UiManager::getInstance().showUi(UiName::eUiPwdDetail);
 }
 
-void UiMainWindow::on_ui_toBeShow()
+void UiMainWindow::handleStackWidgetCurrentChanged(int index)
 {
+    if ( index != UiManager::getInstance().getUiIndex(UiName::eUiMainWindow) ) return ;
+
     QStringList lables = DataBase::getInstance().getAllPwdTypes();
     qDebug() << "all pwdTypes size: " << lables.size();
-    showScrollAreaContext(lables);
+    this->showScrollAreaContext(lables);
 }
 
 

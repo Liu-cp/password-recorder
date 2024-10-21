@@ -36,6 +36,9 @@ public:
     QStackedWidget *getStackedWidget() {
         return m_stackedWidget;
     }
+    int getUiIndex(UiName name) {
+        return m_uiNameMap[name];
+    }
     /*获取指定ui的ui实例*/
     QWidget *getUiInstance(UiName uiName) {
         return m_stackedWidget->widget(m_uiNameMap[uiName]);

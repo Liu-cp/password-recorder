@@ -1,7 +1,8 @@
 #include "uipwddetail.h"
 #include "ui_uipwddetail.h"
-#include "uimanager.h"
-#include "database.h"
+#include "uimainwindow.h"
+#include "common/uimanager.h"
+#include "database/database.h"
 #include <QDebug>
 #include <QApplication>
 #include <QClipboard>
@@ -17,6 +18,9 @@ UiPwdDetail::UiPwdDetail(QWidget *parent)
 
     m_cComboBox_pwdType = new CustomComboBox(this);
     ui->gridLayout->addWidget(m_cComboBox_pwdType, 1, 2);
+
+    UiMainWindow *uiMainWindow = qobject_cast<UiMainWindow *>(UiManager::getInstance().getUiInstance(UiName::eUiMainWindow));
+    connect(uiMainWindow, &UiMainWindow::showPwdDetailsSignal, this, &UiPwdDetail::handleShowPwdDetailsSignal);
 }
 
 UiPwdDetail::~UiPwdDetail()
@@ -24,7 +28,7 @@ UiPwdDetail::~UiPwdDetail()
     delete ui;
 }
 
-void UiPwdDetail::on_ui_toBeShow(UiPwdDetailShowType type, const QString pwdName)
+void UiPwdDetail::handleShowPwdDetailsSignal(UiPwdDetailShowType type, const QString pwdName)
 {
     qDebug() << "UiPwdDetailShowType: " << type << ", pwdName: " << pwdName;
     m_showType = type;
