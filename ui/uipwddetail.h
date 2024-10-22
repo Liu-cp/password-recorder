@@ -36,6 +36,7 @@ private slots:
     void on_button_pwdSave_clicked();
 
     void handleShowPwdDetailsSignal(UiPwdDetailShowType type, const QString pwdName = "");
+    void refreshUi();
 
 private:
     Ui::UiPwdDetail *ui;

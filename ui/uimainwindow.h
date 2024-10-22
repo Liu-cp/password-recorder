@@ -7,6 +7,8 @@
 #include <QLabel>
 #include <memory>
 #include <QHBoxLayout>
+#include <QListWidget>
+#include <QDialog>
 
 namespace Ui {
 class UiMainWindow;
@@ -36,12 +38,16 @@ private:
 private slots:
     void on_button_addNewPwd_clicked();
     void on_button_search_clicked();
-
     void handleLableButtonClicked();
     void handleStackWidgetCurrentChanged(int index);
+    void on_lineEdit_search_textEdited(const QString &arg1);
+    void handleSearchListWidgetSelected(QListWidgetItem *item);
+
+    void on_lineEdit_search_textChanged(const QString &arg1);
 
 signals:
     void showPwdDetailsSignal(UiPwdDetailShowType type, const QString pwdName = "");
+    void triggerHideSearchDialog();
 
 private:
     const QString SYMBOL_LABEL_1 = ">> ";
@@ -51,6 +57,11 @@ private:
     std::unordered_map<QString, std::shared_ptr<LabelButton>> m_strLBMap;
     std::unordered_map<QPushButton *, QString> m_ptrLBstrMap;
     std::unordered_map<QPushButton *, QWidget *> m_buttonChildWidgetMap;    // 主标签按钮对应的需要展开的子显示页，用来回收时释放
+
+    QString m_searchText;
+    QListWidget *m_searchListWidget;
+    QDialog *m_searchDialog;
+    bool m_searchDialogHided;
 };
 
 #endif // UIMAINWINDOW_H

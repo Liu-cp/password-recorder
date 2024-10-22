@@ -18,7 +18,7 @@ CustomComboBox::CustomComboBox(QWidget *parent)
     listDialog->layout()->addWidget(listWidget);
     listDialog->layout()->setContentsMargins(0, 0, 0, 0);
 
-    connect(listWidget, &QListWidget::itemClicked, [&](QListWidgetItem *item) {
+    connect(listWidget, &QListWidget::itemClicked, this, [&](QListWidgetItem *item) {
         this->setEditable(false);
         this->setText(item->text());
 

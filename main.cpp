@@ -80,6 +80,11 @@ void init_uiManager()
 
 int main(int argc, char *argv[])
 {
+#ifdef Q_OS_WINDOWS
+    QApplication::setAttribute(Qt::AA_UseDesktopOpenGL);  // 在桌面平台使用 OpenGL 渲染
+#elif defined(Q_OS_ANDROID)
+    QApplication::setAttribute(Qt::AA_UseOpenGLES);  // 使用 OpenGL 渲染
+#endif
     QApplication a(argc, argv);
     setupLogging();
 

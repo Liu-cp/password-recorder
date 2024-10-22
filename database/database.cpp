@@ -402,11 +402,14 @@ int DataBase::addNewPwdRecord(const DBTable_PwdRecorder &record)
     return 0;
 }
 
-QStringList DataBase::getAllPwdTypes() const
+QStringList DataBase::getPwdTypes(const QString &filter) const
 {
     QStringList types;
 
     QString cmd = QString("SELECT DISTINCT pwdType FROM %1").arg(m_tbPwdRecorder);
+    if ( !filter.isEmpty() ) {
+        cmd = QString("%1 WHERE pwdName LIKE '%%2%' OR pwdType LIKE '%%2%'").arg(cmd, filter);
+    }
 
     if ( OS_ANDROID && m_mysqlValid ) {
         QJsonObject jsonObject = MysqlJniInterface::getInstance().queryMysql(cmd);
@@ -438,11 +441,14 @@ QStringList DataBase::getAllPwdTypes() const
     return types;
 }
 
-std::vector<QString> DataBase::getPwdNamesByPwdType(const QString &pwdType) const
+std::vector<QString> DataBase::getPwdNamesByPwdType(const QString &pwdType, const QString &filter) const
 {
     std::vector<QString> pwdNames;
 
     QString cmd = QString("SELECT pwdName FROM %1 WHERE pwdType = '%2'").arg(m_tbPwdRecorder, pwdType);
+    if ( !filter.isEmpty() ) {
+        cmd = QString("%1 AND pwdName LIKE '%%2%'").arg(cmd, filter);
+    }
 
     if ( OS_ANDROID && m_mysqlValid ) {
         QJsonObject jsonObject = MysqlJniInterface::getInstance().queryMysql(cmd);
@@ -474,6 +480,43 @@ std::vector<QString> DataBase::getPwdNamesByPwdType(const QString &pwdType) cons
     }
 
     return pwdNames;
+}
+
+QStringList DataBase::getSearchLabels(const QString &filter) const
+{
+    QStringList types;
+
+    QString cmd = QString("SELECT DISTINCT pwdType AS result FROM %1 WHERE pwdType LIKE '%%2%' "
+                          "UNION "
+                          "SELECT DISTINCT pwdName AS result FROM %1 WHERE pwdName LIKE '%%2%'").arg(m_tbPwdRecorder, filter);
+    if ( OS_ANDROID && m_mysqlValid ) {
+        QJsonObject jsonObject = MysqlJniInterface::getInstance().queryMysql(cmd);
+        if ( !jsonObject[JSON_KEY_RESULT].isArray() ) {
+            qWarning() << "query failed: " << jsonObject[JSON_KEY_RETURN];
+            return types;
+        }
+
+        QJsonArray jsonArray = jsonObject[JSON_KEY_RESULT].toArray();
+        for ( const auto &value : jsonArray ) {
+            auto object = value.toObject();
+            if ( !object["result"].toString().isEmpty() ) {
+                types.push_back(object["result"].toString());
+            }
+        }
+    }
+    else {
+        QSqlQuery query(getSqlDataBase());
+        if ( !query.exec(cmd) ) {
+            qWarning() << "query failed: " << query.lastError().text();
+            return types;
+        }
+
+        while ( query.next() ) {
+            types.emplace_back(query.value(0).toString());
+        }
+    }
+
+    return types;
 }
 
 int DataBase::getPasswordRecord(const QString &pwdName, DBTable_PwdRecorder &record) const

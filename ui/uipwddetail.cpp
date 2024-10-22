@@ -21,6 +21,11 @@ UiPwdDetail::UiPwdDetail(QWidget *parent)
 
     UiMainWindow *uiMainWindow = qobject_cast<UiMainWindow *>(UiManager::getInstance().getUiInstance(UiName::eUiMainWindow));
     connect(uiMainWindow, &UiMainWindow::showPwdDetailsSignal, this, &UiPwdDetail::handleShowPwdDetailsSignal);
+    connect(ui->lineEdit_pwdName, &QLineEdit::textChanged, this, &UiPwdDetail::refreshUi);
+    connect(m_cComboBox_pwdType, &CustomComboBox::currentTextChanged, this, &UiPwdDetail::refreshUi);
+    connect(ui->lineEdit_username, &QLineEdit::textChanged, this, &UiPwdDetail::refreshUi);
+    connect(ui->lineEdit_pwdName, &QLineEdit::textChanged, this, &UiPwdDetail::refreshUi);
+    connect(ui->lineEdit_password, &QLineEdit::textChanged, this, &UiPwdDetail::refreshUi);
 }
 
 UiPwdDetail::~UiPwdDetail()
@@ -65,9 +70,14 @@ void UiPwdDetail::handleShowPwdDetailsSignal(UiPwdDetailShowType type, const QSt
         ui->button_genPwd->setText("复制用户名");
     }
 
-    QStringList pwdTypes = DataBase::getInstance().getAllPwdTypes();
+    QStringList pwdTypes = DataBase::getInstance().getPwdTypes();
     m_cComboBox_pwdType->clearItems();
     m_cComboBox_pwdType->addItems(pwdTypes);
+}
+
+void UiPwdDetail::refreshUi()
+{
+    UiManager::getInstance().updateUi();
 }
 
 void UiPwdDetail::on_button_return_clicked()
